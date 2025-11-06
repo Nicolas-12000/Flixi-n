@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:movies/core/theme.dart';
 import 'package:movies/presentation/widgets/movie_card.dart';
 import 'package:movies/utils/background_painter.dart';
 import 'package:movies/domain/movie.dart';
+import 'package:movies/data/movie_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +21,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _floatingAnimation;
+  
+  // Scroll infinito
+  final ScrollController _scrollController = ScrollController();
+  List<Movie> _additionalMovies = [];
+  int _currentPage = 1;
+  bool _isLoadingMore = false;
+  final List<String> _searchTerms = ['action', 'drama', 'comedy', 'thriller', 'romance'];
 
   final List<Map<String, String>> days = [
     {'day': 'Jue', 'date': '15'},
@@ -122,6 +131,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _fadeController.forward();
     _slideController.forward();
+    
+    // Scroll infinito listener
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 300 &&
+          !_isLoadingMore) {
+        _loadMoreMovies();
+      }
+    });
   }
 
   @override
@@ -129,7 +147,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _fadeController.dispose();
     _slideController.dispose();
     _floatingController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadMoreMovies() async {
+    if (_isLoadingMore) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    final repo = Provider.of<MovieRepository>(context, listen: false);
+    try {
+      // Rotar entre diferentes términos de búsqueda para variedad
+      final searchTerm = _searchTerms[_currentPage % _searchTerms.length];
+      final result = await repo.searchMovies(searchTerm, page: (_currentPage ~/ _searchTerms.length) + 1);
+      
+      setState(() {
+        _additionalMovies.addAll(result.movies);
+        _currentPage++;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
   }
 
   @override
@@ -142,6 +186,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _buildBackground(),
           SafeArea(
             child: SingleChildScrollView(
+              controller: _scrollController,
               physics: BouncingScrollPhysics(),
               child: Padding(
                 padding: EdgeInsets.all(20),
@@ -157,6 +202,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildFeaturedMovies(),
                     SizedBox(height: 28),
                     _buildTrailersSection(),
+                    if (_additionalMovies.isNotEmpty) ...[
+                      SizedBox(height: 28),
+                      _buildMoreMoviesSection(),
+                    ],
+                    if (_isLoadingMore)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 3),
+                        ),
+                      ),
                     SizedBox(height: 100),
                   ],
                 ),
@@ -490,6 +546,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMoreMoviesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Más películas',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        SizedBox(height: 16),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: _additionalMovies.length,
+          itemBuilder: (context, index) {
+            return Container(
+              height: 220,
+              margin: EdgeInsets.only(bottom: 16),
+              child: MovieCard(movie: _additionalMovies[index]),
+            );
+          },
         ),
       ],
     );
