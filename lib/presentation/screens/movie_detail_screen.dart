@@ -101,9 +101,32 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
       expandedHeight: 450,
       pinned: true,
       backgroundColor: Colors.transparent,
-      leading: Padding(
-        padding: EdgeInsets.all(8),
-        child: Container(
+      leading: Container(
+        margin: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha((0.9 * 255).round()),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha((0.2 * 255).round()),
+              blurRadius: 8,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.pop(context),
+            customBorder: CircleBorder(),
+            child: Center(
+              child: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        Container(
+          margin: EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.white.withAlpha((0.9 * 255).round()),
             shape: BoxShape.circle,
@@ -114,29 +137,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
               ),
             ],
           ),
-          child: IconButton(
-            icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-      ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.all(8),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha((0.9 * 255).round()),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha((0.2 * 255).round()),
-                  blurRadius: 8,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                // Funcionalidad de compartir
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Compartir película')),
+                );
+              },
+              customBorder: CircleBorder(),
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Center(
+                  child: Icon(Icons.share, color: AppColors.textPrimary),
                 ),
-              ],
-            ),
-            child: IconButton(
-              icon: Icon(Icons.share, color: AppColors.textPrimary),
-              onPressed: () {},
+              ),
             ),
           ),
         ),

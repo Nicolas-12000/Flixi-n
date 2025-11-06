@@ -470,7 +470,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha((0.2 * 255).round()),
+                              color: Colors.black.withAlpha(
+                                (0.2 * 255).round(),
+                              ),
                               blurRadius: 8,
                               offset: Offset(0, 4),
                             ),
@@ -492,8 +494,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ],
     );
   }
-
-
 
   Widget _buildBottomNavBar() {
     return Container(
