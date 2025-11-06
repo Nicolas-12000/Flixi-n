@@ -40,8 +40,7 @@ class _SearchScreenState extends State<SearchScreen>
     _controller.forward();
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
-              _scrollController.position.maxScrollExtent -
-                  250 && // near bottom
+              _scrollController.position.maxScrollExtent - 250 && // near bottom
           !_isLoadingMore &&
           _results.length < _totalResults) {
         _loadMore();
@@ -103,7 +102,10 @@ class _SearchScreenState extends State<SearchScreen>
     _currentPage += 1;
     final repo = Provider.of<MovieRepository>(context, listen: false);
     try {
-      final res = await repo.searchMovies(_searchController.text.trim(), page: _currentPage);
+      final res = await repo.searchMovies(
+        _searchController.text.trim(),
+        page: _currentPage,
+      );
       setState(() {
         _results.addAll(res.movies);
         _totalResults = res.totalResults;

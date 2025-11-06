@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movies/core/theme.dart';
 import 'package:movies/presentation/widgets/movie_card.dart';
-import 'package:movies/presentation/widgets/category_chip.dart';
 import 'package:movies/utils/background_painter.dart';
 import 'package:movies/domain/movie.dart';
 
@@ -58,6 +57,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       duration: '2h 32min',
       cast: ['Christian Bale', 'Heath Ledger', 'Aaron Eckhart'],
     ),
+    Movie(
+      id: 'tt0816692',
+      title: 'Interstellar',
+      posterUrl:
+          'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
+      year: '2014',
+      genre: 'Adventure, Drama, Sci-Fi',
+      rating: '8.6',
+      plot:
+          'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',
+      director: 'Christopher Nolan',
+      duration: '2h 49min',
+      cast: ['Matthew McConaughey', 'Anne Hathaway', 'Jessica Chastain'],
+    ),
+  ];
+
+  // Trailers para la sección inferior
+  final List<Map<String, String>> trailers = [
+    {
+      'id': 'tt1798709',
+      'thumbnail':
+          'https://m.media-amazon.com/images/M/MV5BMjA1Nzk0OTM2OF5BMl5BanBnXkFtZTgwNjU2NjEwMDE@._V1_SX300.jpg',
+    },
+    {
+      'id': 'tt0468569',
+      'thumbnail':
+          'https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg',
+    },
+    {
+      'id': 'tt0816692',
+      'thumbnail':
+          'https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_SX300.jpg',
+    },
   ];
 
   @override
@@ -123,8 +155,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildDateSelector(),
                     SizedBox(height: 24),
                     _buildFeaturedMovies(),
-                    SizedBox(height: 24),
-                    _buildCategoriesSection(),
+                    SizedBox(height: 28),
+                    _buildTrailersSection(),
+                    SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -270,7 +303,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   Widget _buildDateSelector() {
     return Container(
-      height: 85,
+      height: 80,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: BouncingScrollPhysics(),
@@ -289,10 +322,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   _slideController.reset();
                   _slideController.forward();
                 },
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
                 child: AnimatedContainer(
                   duration: Duration(milliseconds: 300),
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
                     gradient: isSelected
                         ? LinearGradient(
@@ -305,14 +338,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           )
                         : null,
                     color: isSelected ? null : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
                         color: isSelected
-                            ? AppColors.primary.withAlpha((0.4 * 255).round())
-                            : Colors.black.withAlpha((0.08 * 255).round()),
-                        blurRadius: isSelected ? 16 : 8,
-                        offset: Offset(0, isSelected ? 6 : 3),
+                            ? AppColors.primary.withAlpha((0.35 * 255).round())
+                            : Colors.black.withAlpha((0.06 * 255).round()),
+                        blurRadius: isSelected ? 14 : 6,
+                        offset: Offset(0, isSelected ? 5 : 2),
                       ),
                     ],
                   ),
@@ -323,18 +356,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         days[index]['day']!,
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.grey[600],
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      SizedBox(height: 6),
+                      SizedBox(height: 4),
                       Text(
                         days[index]['date']!,
                         style: TextStyle(
                           color: isSelected
                               ? Colors.white
                               : AppColors.textPrimary,
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -355,13 +388,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: FadeTransition(
         opacity: _fadeAnimation,
         child: Container(
-          height: 520,
+          height: 480,
           child: PageView.builder(
             physics: BouncingScrollPhysics(),
             itemCount: featuredMovies.length,
+            padEnds: false,
+            controller: PageController(viewportFraction: 0.85),
             itemBuilder: (context, index) {
               return Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4),
+                padding: EdgeInsets.symmetric(horizontal: 6),
                 child: MovieCard(movie: featuredMovies[index]),
               );
             },
@@ -371,41 +406,94 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoriesSection() {
+  Widget _buildTrailersSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Categorías',
+          'Trailers',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
           ),
         ),
         SizedBox(height: 16),
-        _buildCategoryChips(),
+        Container(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: BouncingScrollPhysics(),
+            itemCount: trailers.length,
+            itemBuilder: (context, index) {
+              return Container(
+                width: 140,
+                margin: EdgeInsets.only(right: 12),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.network(
+                        trailers[index]['thumbnail']!,
+                        width: 140,
+                        height: 100,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[300],
+                            child: Icon(Icons.movie, color: Colors.grey[400]),
+                          );
+                        },
+                      ),
+                    ),
+                    // Overlay oscuro sutil
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withAlpha((0.3 * 255).round()),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Play button
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha((0.9 * 255).round()),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha((0.2 * 255).round()),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: AppColors.primary,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildCategoryChips() {
-    final categories = [
-      'Acción',
-      'Drama',
-      'Comedia',
-      'Sci-Fi',
-      'Romance',
-      'Terror',
-    ];
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: categories.map((category) {
-        return CategoryChip(label: category);
-      }).toList(),
-    );
-  }
+
 
   Widget _buildBottomNavBar() {
     return Container(
