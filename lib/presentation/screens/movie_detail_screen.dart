@@ -216,56 +216,77 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
   }
 
   Widget _buildMovieInfo() {
+    // New card-like info section that visually overlaps the poster
     return Padding(
-      padding: EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.symmetric(horizontal: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.movie.title,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              _buildInfoChip(Icons.star, widget.movie.rating),
-              SizedBox(width: 12),
-              _buildInfoChip(Icons.calendar_today, widget.movie.year),
-              SizedBox(width: 12),
-              _buildInfoChip(Icons.access_time, widget.movie.duration),
-            ],
-          ),
-          SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.all(16),
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(20, 28, 20, 20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha((0.05 * 255).round()),
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
+                  color: Colors.black.withAlpha((0.06 * 255).round()),
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 8),
+                Text(
+                  widget.movie.title,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    _buildInfoChip(Icons.calendar_today, widget.movie.year),
+                    SizedBox(width: 12),
+                    _buildInfoChip(Icons.access_time, widget.movie.duration),
+                    SizedBox(width: 12),
+                    _buildInfoChip(Icons.star, widget.movie.rating),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Divider(),
+                SizedBox(height: 8),
                 _buildDetailRow('Director', widget.movie.director),
-                Divider(height: 24),
-                _buildDetailRow('Género', widget.movie.genre),
               ],
+            ),
+          ),
+          // IMDb badge positioned overlapping top-right of the white card
+          Positioned(
+            top: -28,
+            right: 18,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Color(0xFFFFD24D), // IMDb-ish yellow
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha((0.1 * 255).round()),
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Text('IMDb', style: TextStyle(fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
           ),
         ],

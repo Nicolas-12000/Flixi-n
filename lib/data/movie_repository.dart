@@ -52,7 +52,10 @@ class MovieRepository {
     throw Exception('Network error: ${response.statusCode}');
   }
 
-  Future<List<Movie>> searchMovies(String query) async {
+  /// Result of a search request (movies + total results reported by OMDb)
+  ///
+  /// OMDb returns up to 10 results per page; use [page] to request more.
+  Future<SearchResult> searchMovies(String query, {int page = 1}) async {
     final apiKey = _resolveApiKey();
     if (apiKey.isEmpty) {
       throw Exception(
@@ -60,20 +63,32 @@ class MovieRepository {
       );
     }
     final uri = Uri.parse(
-      '$baseUrl?apikey=$apiKey&s=${Uri.encodeQueryComponent(query)}',
+      '$baseUrl?apikey=$apiKey&s=${Uri.encodeQueryComponent(query)}&page=$page',
     );
     final response = await http.get(uri);
     if (response.statusCode == 200) {
       final data = json.decode(response.body) as Map<String, dynamic>;
       if (data['Response'] == 'True' && data['Search'] != null) {
         final List results = data['Search'];
-        // Search results are smaller, map and fill defaults
-        return results
+        final movies = results
             .map((m) => Movie.fromJson(m as Map<String, dynamic>))
             .toList();
+        int total = 0;
+        if (data['totalResults'] != null) {
+          total = int.tryParse(data['totalResults'].toString()) ?? 0;
+        }
+        return SearchResult(movies: movies, totalResults: total);
       }
-      return [];
+      return SearchResult(movies: [], totalResults: 0);
     }
     throw Exception('Network error: ${response.statusCode}');
   }
+}
+
+/// Simple container for search results coming from OMDb
+class SearchResult {
+  final List<Movie> movies;
+  final int totalResults;
+
+  SearchResult({required this.movies, required this.totalResults});
 }

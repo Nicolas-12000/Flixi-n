@@ -23,6 +23,11 @@ class _SearchScreenState extends State<SearchScreen>
   bool _loading = false;
   List<Movie> _results = [];
   String? _error;
+  // Pagination
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  int _totalResults = 0;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
@@ -33,6 +38,15 @@ class _SearchScreenState extends State<SearchScreen>
     );
     _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent -
+                  250 && // near bottom
+          !_isLoadingMore &&
+          _results.length < _totalResults) {
+        _loadMore();
+      }
+    });
   }
 
   @override
@@ -40,6 +54,7 @@ class _SearchScreenState extends State<SearchScreen>
     _searchController.dispose();
     _controller.dispose();
     _debounce?.cancel();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -59,23 +74,45 @@ class _SearchScreenState extends State<SearchScreen>
       });
       return;
     }
-
     setState(() {
       _loading = true;
       _error = null;
+      _currentPage = 1;
+      _totalResults = 0;
     });
 
     final repo = Provider.of<MovieRepository>(context, listen: false);
     try {
-      final res = await repo.searchMovies(query);
+      final res = await repo.searchMovies(query, page: 1);
       setState(() {
-        _results = res;
+        _results = res.movies;
+        _totalResults = res.totalResults;
         _loading = false;
       });
     } catch (e) {
       setState(() {
         _error = e.toString();
         _loading = false;
+      });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore) return;
+    _isLoadingMore = true;
+    _currentPage += 1;
+    final repo = Provider.of<MovieRepository>(context, listen: false);
+    try {
+      final res = await repo.searchMovies(_searchController.text.trim(), page: _currentPage);
+      setState(() {
+        _results.addAll(res.movies);
+        _totalResults = res.totalResults;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoadingMore = false;
       });
     }
   }
@@ -212,14 +249,28 @@ class _SearchScreenState extends State<SearchScreen>
     }
 
     return ListView.builder(
+      controller: _scrollController,
       padding: EdgeInsets.all(12),
-      itemCount: _results.length,
+      itemCount: _results.length + (_results.length < _totalResults ? 1 : 0),
       itemBuilder: (context, index) {
-        final movie = _results[index];
-        return Container(
-          height: 220,
-          margin: EdgeInsets.only(bottom: 12),
-          child: MovieCard(movie: movie),
+        if (index < _results.length) {
+          final movie = _results[index];
+          return Container(
+            height: 220,
+            margin: EdgeInsets.only(bottom: 12),
+            child: MovieCard(movie: movie),
+          );
+        }
+        // loading indicator row
+        return Padding(
+          padding: EdgeInsets.symmetric(vertical: 12),
+          child: Center(
+            child: SizedBox(
+              width: 32,
+              height: 32,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+          ),
         );
       },
     );
